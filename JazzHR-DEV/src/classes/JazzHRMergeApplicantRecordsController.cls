@@ -20,6 +20,8 @@ public class JazzHRMergeApplicantRecordsController {
         @AuraEnabled
         public string jazzHRId{get;set;}
         @AuraEnabled
+        public date applyDate{get;set;}
+        @AuraEnabled
         public integer totalJobApplications{get;set;}
         @AuraEnabled
         public integer totalQuestionnaire{get;set;}
@@ -54,7 +56,7 @@ public class JazzHRMergeApplicantRecordsController {
         Applicant__c applicantRecord = [select id,Email__c,JazzHR_Applicant_ID__c from Applicant__c where id=:applicantId limit 1];
         system.debug('** Applicant Records ***'+applicantRecord);
         list<Applicant__c> lstOfDuplicateApplicants;
-        lstOfDuplicateApplicants = [select id,email__c,first_Name__c,Last_Name__c,JazzHR_Applicant_ID__c,(select id from Job_Applications__r),(select id,Answer__c,Question__c from Questionnaire__r) from Applicant__c where email__c=:applicantRecord.Email__c];
+        lstOfDuplicateApplicants = [select id,email__c,Apply_Date__c,first_Name__c,Last_Name__c,JazzHR_Applicant_ID__c,(select id from Job_Applications__r),(select id,Answer__c,Question__c from Questionnaire__r) from Applicant__c where email__c=:applicantRecord.Email__c];
         System.debug('*** lst of applicants'+lstOfDuplicateApplicants);
         if(lstOfDuplicateApplicants.size()>0){
             for(Applicant__c ap: lstOfDuplicateApplicants){
@@ -64,6 +66,7 @@ public class JazzHRMergeApplicantRecordsController {
                 appObj.lastName = ap.Last_Name__c;
                 appObj.jazzHRId = ap.JazzHR_Applicant_ID__c;
                 appObj.email = ap.Email__c;
+                appObj.applyDate = ap.Apply_Date__c;
                 appObj.totalJobApplications = ap.Job_Applications__r.size();
                 appObj.totalQuestionnaire = ap.Questionnaire__r.size();
                 lstApplicantWrapper.add(appObj);

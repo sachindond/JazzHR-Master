@@ -259,6 +259,7 @@ public class JazzHRSFDCUtils {
                 
                 For(JazzHRWrapper.JobApplicatonWrapper currentJobApplication: currentListofJobAplicationss)
                 {
+                   
                     Job_Application__c newJobApplication = new Job_Application__c();
                     newJobApplication.JazzHR_Job_Application_ID__c = currentJobApplication.id;
                     newJobApplication.Rating__c = currentJobApplication.rating;
@@ -284,6 +285,7 @@ public class JazzHRSFDCUtils {
             
             //Fetch Related Applicants
             List<Applicant__c> ApplicantsList = [SELECT ID, JazzHR_Applicant_ID__c FROM Applicant__c WHERE JazzHR_Applicant_ID__c =: ApplicantsJazzIDSet];
+            
             //Create Map<Jazz Id, User Id in Salesforce>
             Map<String, Id> ApplicantJazzIdSFDCIdMap = new Map<String, Id>();
             For(Applicant__c currentapplicant: ApplicantsList)
@@ -309,12 +311,13 @@ public class JazzHRSFDCUtils {
                 List<Log_Entry__c> entries = new List<Log_Entry__c>();
                 
                 for(Database.UpsertResult theResult : results) {
+                   
                     if(theResult.isSuccess())
                         continue; // next item
                     List<Database.Error> errors = theResult.getErrors();
                     for(Database.Error theError : Errors) {
                         Log_Entry__c newentry = new Log_Entry__c();
-                        newEntry.Function__c = 'JazzHRMigrationActivityCalls.MigrateAllJobApplications';
+                        newEntry.Function__c = 'JazzHRSFDCUtils.SyncJobApplications';
                         newEntry.Message__c = 'Status Code: ' + theError.getStatusCode() + ': Error: ' + theError.getMessage();
                         newentry.Type__c = 'Error';
                         entries.add(newentry);
@@ -332,6 +335,101 @@ public class JazzHRSFDCUtils {
             return false;           
         }
     }
+    // method to sync job application basesd on job id for update workflow step id 
+    // Date : 04/06/2019
+        
+    public static boolean SyncJobApplicationsByJobId(List<List<JazzHRWrapper.JobApplicatonWrapper>> returnedDataList)
+    {
+        try
+        {
+            List<Job_Application__c> JobsApplicationsToUpsertList = new List<Job_Application__c>();
+            Set<String> JobsJazzIDSet = new Set<String>();
+            Set<String> ApplicantsJazzIDSet = new Set<String>();
+            system.debug('returnedDataList size: ' + returnedDataList.size());
+            For(List<JazzHRWrapper.JobApplicatonWrapper> currentListofJobAplicationss: returnedDataList)
+            {
+                system.debug('currentListofJobAplicationss.size: ' + currentListofJobAplicationss.size());
+                
+                For(JazzHRWrapper.JobApplicatonWrapper currentJobApplication: currentListofJobAplicationss)
+                {
+                   
+                    Job_Application__c newJobApplication = new Job_Application__c();
+                    newJobApplication.JazzHR_Job_Application_ID__c = currentJobApplication.id;
+                    newJobApplication.Rating__c = currentJobApplication.rating;
+                    newJobApplication.Workflow_Step_Id__c = currentJobApplication.workflow_step_id;
+                    newJobapplication.Job_Jazz_ID__c = currentJobApplication.job_id;
+                    newJobApplication.Applicant_Jazz_Id__c = currentJobApplication.applicant_id;
+                    //Fetch Applicant and jobs seperately and associate later
+                    JobsJazzIDSet.add(currentJobApplication.job_id);
+                    ApplicantsJazzIDSet.add(currentJobApplication.applicant_id);
+                    JobsApplicationsToUpsertList.add(newJobApplication);
+                }
+            }
+            
+            //Fetch Related Jobs
+            List<Job_Listing__c> JobsList = [SELECT ID, JazzHR_Job_ID__c FROM Job_Listing__c WHERE JazzHR_Job_ID__c =: JobsJazzIDSet];
+            //Create Map<Jazz Id, User Id in Salesforce>
+            Map<String, Id> JobJazzIdSFDCIdMap = new Map<String, Id>();
+            For(Job_Listing__c currentjob: JobsList)
+            {
+                JobJazzIdSFDCIdMap.put(currentjob.JazzHR_Job_ID__c, currentjob.Id);
+            }
+            
+            //Fetch Related Applicants
+            List<Applicant__c> ApplicantsList = [SELECT ID, JazzHR_Applicant_ID__c FROM Applicant__c WHERE JazzHR_Applicant_ID__c =: ApplicantsJazzIDSet];
+           
+            //Create Map<Jazz Id, User Id in Salesforce>
+            Map<String, Id> ApplicantJazzIdSFDCIdMap = new Map<String, Id>();
+            For(Applicant__c currentapplicant: ApplicantsList)
+            {
+                ApplicantJazzIdSFDCIdMap.put(currentapplicant.JazzHR_Applicant_ID__c, currentapplicant.Id);
+            }            
+            
+            //Associate correct Job and Applicant in the generated list of jobs now.
+            For(Job_Application__c currentjobapplication: JobsApplicationsToUpsertList)
+            {
+                currentjobapplication.Job_Listing__c = JobJazzIdSFDCIdMap.get(currentjobapplication.Job_Jazz_ID__c);
+                currentjobapplication.Applicant__c = ApplicantJazzIdSFDCIdMap.get(currentjobapplication.Applicant_Jazz_Id__c);
+            }
+            
+            If(JobsApplicationsToUpsertList != null && JobsApplicationsToUpsertList.size()>0)
+            {
+                Database.UpsertResult[] results = Database.upsert(JobsApplicationsToUpsertList, Job_Application__c.Fields.JazzHR_Job_Application_ID__c, false); 
+               // Database.UpsertResult[] results = Database.upsert(JobsApplicationsToUpsertList, false); 
+                
+                //upsert ApplicantToUpsertList JazzHR_Applicant_ID__c;
+                List<Log_Entry__c> entries = new List<Log_Entry__c>();
+                
+                for(Database.UpsertResult theResult : results) {
+                    system.debug('****Result id'+theResult.getId());
+                    if(theResult.isSuccess())
+                        continue; // next item
+                    List<Database.Error> errors = theResult.getErrors();
+                    for(Database.Error theError : Errors) {
+                        Log_Entry__c newentry = new Log_Entry__c();
+                        newEntry.Function__c = 'JazzHRSFDCUtils.SyncJobApplications';
+                        newEntry.Message__c = 'Status Code: ' + theError.getStatusCode() + ': Error: ' + theError.getMessage();
+                        newentry.Type__c = 'Error';
+                        entries.add(newentry);
+                    }
+                }
+                
+                insert entries;
+            }
+            return true;
+        }
+        catch(Exception oEx)
+        {
+             Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRSFDCUtils.SyncJobApplications', '');    
+            system.debug('Error: ' + 'Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage());
+            return false;           
+        }
+    }
+    
+    
+    
+    
+    
     //sync a single applicant with SFDC from JazzHr
     public static SyncApplicantResponse SyncSingleApplicant(JazzHRWrapper.ApplicantWrapper currentApplicant, 
                                               JazzHRWrapper.ApplicantWithSingleApplicationWrapper currentApplicantWithSingleJob)

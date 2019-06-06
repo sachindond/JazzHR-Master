@@ -441,6 +441,17 @@ AND(OR(Applicant_Progress__c = &quot;Lambeth Candidate&quot;,Applicant_Progress_
     </fields>
     <label>Job Application</label>
     <listViews>
+        <fullName>All</fullName>
+        <columns>NAME</columns>
+        <columns>Applicant__c</columns>
+        <columns>Applicant_Progress__c</columns>
+        <columns>Job_Listing__c</columns>
+        <columns>Workflow_Step_ID__c</columns>
+        <columns>CREATED_DATE</columns>
+        <filterScope>Everything</filterScope>
+        <label>All</label>
+    </listViews>
+    <listViews>
         <fullName>Full_Time</fullName>
         <columns>NAME</columns>
         <columns>Applicant__c</columns>

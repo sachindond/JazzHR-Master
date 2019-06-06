@@ -293,6 +293,17 @@
         <unique>false</unique>
     </fields>
     <fields>
+        <fullName>Total_Job_Applications__c</fullName>
+        <description>Rollup Summary field to display total job applications</description>
+        <externalId>false</externalId>
+        <label>Total Job Applications</label>
+        <summaryForeignKey>Job_Application__c.Job_Listing__c</summaryForeignKey>
+        <summaryOperation>count</summaryOperation>
+        <trackHistory>false</trackHistory>
+        <trackTrending>false</trackTrending>
+        <type>Summary</type>
+    </fields>
+    <fields>
         <fullName>Type__c</fullName>
         <externalId>false</externalId>
         <label>Type</label>

@@ -88,15 +88,15 @@ public class JazzHRCallouts {
                 transient String strResponse;
                 string strEndPoint = 'jobs/page/' + pagenumber;
                 strResponse = JazzHRCallouts.ExecuteJazzHRHTTPCallout(strEndPoint, 'GET', null);
-                 system.debug('----job listing response---->'+strResponse);
+                system.debug('----job listing response---->'+strResponse);
                 ReturnedData = (List<JazzHRWrapper.JobListingWrapper>)System.JSON.deserialize(strResponse, List<JazzHRWrapper.JobListingWrapper>.class);
                 If(ReturnedData != null && ReturnedData.size() > 0)
                     ReturnedDataList.add(ReturnedData);
                 pagenumber+=1;
-                 if(Test.isRunningTest())
+                if(Test.isRunningTest())
                     break;
             }
-            while(ReturnedData != null && ReturnedData.size() > 0);
+            while(ReturnedData != null && ReturnedData.size() > 0 );
             
             return ReturnedDataList;
             
@@ -122,7 +122,7 @@ public class JazzHRCallouts {
                 transient String strResponse;
                 string strEndPoint = 'jobs/from_open_date/' + fromopendate + '/page/' + pagenumber;
                 strResponse = JazzHRCallouts.ExecuteJazzHRHTTPCallout(strEndPoint, 'GET', null);
-                 system.debug('----jobs by date response---->'+strResponse);
+                system.debug('----jobs by date response---->'+strResponse);
                 try
                 {
                     //JOSN response might content single record and multiple records. we need to support the response fetching accordingly.
@@ -133,15 +133,15 @@ public class JazzHRCallouts {
                     //possiblity that single record recieved
                     system.debug('possibly single Job record received and exception thrown. Try single parser now');
                     JazzHRWrapper.JobListingWrapper currentJob = (JazzHRWrapper.JobListingWrapper)System.JSON.deserialize(strResponse, 
-                                                                                       JazzHRWrapper.JobListingWrapper.class);  
-
+                                                                                                                          JazzHRWrapper.JobListingWrapper.class);  
+                    
                     ReturnedData.add(currentJob);
                 }
-
+                
                 If(ReturnedData != null && ReturnedData.size() > 0)
                     ReturnedDataList.add(ReturnedData);
                 pagenumber+=1;
-                 if(Test.isRunningTest())
+                if(Test.isRunningTest())
                     break;
             }
             while(ReturnedData != null && ReturnedData.size() > 0);
@@ -177,10 +177,10 @@ public class JazzHRCallouts {
                 If(ReturnedData != null && ReturnedData.size() > 0)
                     ReturnedDataList.add(ReturnedData);
                 pagenumber+=1;
-                 if(Test.isRunningTest())
+                if(Test.isRunningTest())
                     break;
             }
-            while(ReturnedData != null && ReturnedData.size() > 0);
+            while(ReturnedData != null && ReturnedData.size() > 0 );
             
             return ReturnedDataList;    
         }
@@ -208,7 +208,7 @@ public class JazzHRCallouts {
                 transient String strResponse;
                 string strEndPoint = 'applicants/apply_date/'+ applydate + '/page/' + pagenumber;
                 strResponse = JazzHRCallouts.ExecuteJazzHRHTTPCallout(strEndPoint, 'GET', null);
-                 system.debug('----applicant by date response---->'+strResponse);
+                system.debug('----applicant by date response---->'+strResponse);
                 //ReturnedData = (List<JazzHRWrapper.ApplicantWrapper>)System.JSON.deserialize(strResponse, List<JazzHRWrapper.ApplicantWrapper>.class);
                 
                 try
@@ -221,7 +221,7 @@ public class JazzHRCallouts {
                     //possiblity that single record recieved
                     system.debug('possibly single Job record received and exception thrown. Try single parser now');
                     JazzHRWrapper.ApplicantWrapper currentApplicant = (JazzHRWrapper.ApplicantWrapper)System.JSON.deserialize(strResponse, 
-                                                                                                                          JazzHRWrapper.ApplicantWrapper.class);  
+                                                                                                                              JazzHRWrapper.ApplicantWrapper.class);  
                     ReturnedData.add(currentApplicant);
                 }
                 
@@ -229,7 +229,7 @@ public class JazzHRCallouts {
                 If(ReturnedData != null && ReturnedData.size() > 0)
                     ReturnedDataList.add(ReturnedData);
                 pagenumber+=1;
-                 if(Test.isRunningTest())
+                if(Test.isRunningTest())
                     break;
             }
             while(ReturnedData != null && ReturnedData.size() > 0);
@@ -248,7 +248,7 @@ public class JazzHRCallouts {
         try{
             //JazzHR API returns data for single Applicant based on Prospect Id.
             //We will iterate via these pages and store the results in list of ApplicantWrapper
-			System.debug('----applicantId--->'+applicantId);
+            System.debug('----applicantId--->'+applicantId);
             JazzHRWrapper.ApplicantWrapper ReturnedData = new JazzHRWrapper.ApplicantWrapper();
             
             String strResponse;
@@ -261,7 +261,7 @@ public class JazzHRCallouts {
         }catch(Exception oEx){
             //Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRCallouts.GetSingleApplicant', 'request body if any'); 
             system.debug('JazzHRCallouts.GetSingleApplicant' + 'Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage());
-               
+            
             return null;
         }
     }    
@@ -271,7 +271,7 @@ public class JazzHRCallouts {
         try{
             //JazzHR API returns data for single Applicant based on Prospect Id.
             //We will iterate via these pages and store the results in list of ApplicantWithSingleApplicationWrapper
-			System.debug('----applicantId--->'+applicantId);
+            System.debug('----applicantId--->'+applicantId);
             JazzHRWrapper.ApplicantWithSingleApplicationWrapper ReturnedData = new JazzHRWrapper.ApplicantWithSingleApplicationWrapper();
             
             String strResponse;
@@ -307,10 +307,10 @@ public class JazzHRCallouts {
                 If(ReturnedData != null && ReturnedData.size() > 0)
                     ReturnedDataList.add(ReturnedData);
                 pagenumber+=1;
-                 if(Test.isRunningTest())
+                if(Test.isRunningTest())
                     break;
             }
-            while(ReturnedData != null && ReturnedData.size() > 0);
+            while(ReturnedData != null && ReturnedData.size() > 0 );
             
             return ReturnedDataList;
             
@@ -321,6 +321,51 @@ public class JazzHRCallouts {
         }
     }
     
+    
+    // Date : 06/03/2019
+    // Method to get Job Application based on Job Listing Id
+    public static List<List<JazzHRWrapper.JobApplicatonWrapper>> getJobApplicationByJobId(string jobId){
+       
+        try{
+            
+            Integer pagenumber = 1;
+            List<List<JazzHRWrapper.JobApplicatonWrapper>> ReturnedDataList = new List<List<JazzHRWrapper.JobApplicatonWrapper>>();
+            List<JazzHRWrapper.JobApplicatonWrapper> ReturnedData = new   List<JazzHRWrapper.JobApplicatonWrapper> ();
+            do
+            {
+                transient String strResponse;
+                string strEndPoint = 'applicants2jobs/job_id/'+jobId+'/page/'+pagenumber;
+                strResponse = JazzHRCallouts.ExecuteJazzHRHTTPCallout(strEndPoint, 'GET', null);
+                system.debug('-----GetAllJobApplications responses'+(strResponse));
+                try{
+                    ReturnedData = (List<JazzHRWrapper.JobApplicatonWrapper>)System.JSON.deserialize(strResponse, List<JazzHRWrapper.JobApplicatonWrapper>.class);
+                    system.debug('****RETURN DATA IN TRY***'+ReturnedData.size());
+                }catch(Exception Ex){
+                    // this logic to handle single job application record
+                    JazzHRWrapper.JobApplicatonWrapper singleJobApplication = (JazzHRWrapper.JobApplicatonWrapper)System.JSON.deserialize(strResponse, 
+                                                                                                                                          JazzHRWrapper.JobApplicatonWrapper.class);  
+                    system.debug('***single job applicaton '+singleJobApplication);
+                    if(singleJobApplication!=null)
+                        ReturnedData.add(singleJobApplication);
+                }
+                If(ReturnedData != null && ReturnedData.size() > 0)
+                    ReturnedDataList.add(ReturnedData);
+                pagenumber+=1;
+                if(Test.isRunningTest())
+                    break;
+            }
+            while(ReturnedData != null && ReturnedData.size() > 0);
+            system.debug('*****Return Data List Size****'+ReturnedDataList.size());
+            system.debug('*****Return Data List****'+ReturnedDataList);
+            return ReturnedDataList;
+            
+        }catch(Exception oEx){
+            Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRCallouts.getJobApplicationByJobId', 'request body if any');    
+            system.debug('Error: ' + 'Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage());
+            return null;
+        }
+        
+    }    
     
     //generic method to use for HTTP Callouts. Just create correct endpoint append string that will be added to Base URL
     // And Request Body.
@@ -355,6 +400,5 @@ public class JazzHRCallouts {
             Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRCallouts.ExecuteGCLHTTPCalloutInit', 'request body if any');    
         }
         return null;   
-    }
-    
+    }    
 }

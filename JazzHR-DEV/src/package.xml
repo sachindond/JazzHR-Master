@@ -87,7 +87,11 @@
         <members>JazzHR_Reports/Todays_Applicants_Mmv</members> 
         
     </types>
-   
+   <types>
+        <members>JazzHR_Dashboards</members>
+        <members>JazzHR_Dashboards/qftsSHHxzgzRJgPXroUFudvaTbyRoM</members>
+        <name>Dashboard</name>
+    </types>
   
     <version>37.0</version>
 </Package>

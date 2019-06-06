@@ -584,6 +584,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Job_Listing__c.Total_Job_Applications__c</field>
+        <readable>false</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Job_Listing__c.Type__c</field>
         <readable>true</readable>

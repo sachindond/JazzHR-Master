@@ -89,6 +89,9 @@
             <componentName>JazzHRMergeApplicantRecords</componentName>
         </componentInstances>
         <componentInstances>
+            <componentName>JazzHRFetchDeletedApplicant</componentName>
+        </componentInstances>
+        <componentInstances>
             <componentInstanceProperties>
                 <name>relatedListComponentOverride</name>
                 <value>NONE</value>

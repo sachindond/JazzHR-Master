@@ -33,7 +33,18 @@
                         </div>
                         
                         <p class="slds-page-header__name-meta">Consolidated View Of An Applicant</p>
-                        <div style='width:400px; margin-left:400px; margin-top:-35px;'><c:JazzHRCustomLookup objectAPIName="Applicant__c" IconName="custom:custom15" selectedRecord="{!v.selectedLookUpRecord}" label="Search Applicant"/></div>    
+                        
+                        
+                        <div style='width:200px;  margin-left: 300px; margin-top:-45px;'>
+                            <lightning:select aura:id="select" name="select" label="Select Correct Option" onchange="{!c.onApplicantOptionChange }">
+                                <option value="showExisting">Show Existing Applicant</option>
+                                <option value="fetchDeleted">Fetch Deleted Applicant</option>
+                            </lightning:select>
+                        </div>
+                        
+                        <div style='width:400px; margin-left:550px; margin-top:-58px;'>
+                            <c:JazzHRCustomLookup objectAPIName="Applicant__c" IconName="custom:custom15" selectedRecord="{!v.selectedLookUpRecord}" label="Search Applicant"/>
+                        </div>    
                         
                     </div>
                 </div>

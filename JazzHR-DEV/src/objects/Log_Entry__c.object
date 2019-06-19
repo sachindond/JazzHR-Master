@@ -69,11 +69,10 @@
         <fullName>Message__c</fullName>
         <externalId>false</externalId>
         <label>Message</label>
-        <length>255</length>
-        <required>false</required>
+        <length>131072</length>
         <trackTrending>false</trackTrending>
-        <type>Text</type>
-        <unique>false</unique>
+        <type>LongTextArea</type>
+        <visibleLines>5</visibleLines>
     </fields>
     <fields>
         <fullName>Request_Body__c</fullName>

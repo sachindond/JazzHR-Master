@@ -17,5 +17,7 @@
     },
     expandEnquirySection: function(component, event, helper) {
         helper.expandSection(component,event,'expandEnquirySectionId');
+    },
+    onApplicantOptionChange : function(component, event, helper) {
     }
 })

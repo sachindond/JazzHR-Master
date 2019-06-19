@@ -266,6 +266,7 @@ public class JazzHRSFDCUtils {
                     newJobApplication.Workflow_Step_Id__c = currentJobApplication.workflow_step_id;
                     newJobapplication.Job_Jazz_ID__c = currentJobApplication.job_id;
                     newJobApplication.Applicant_Jazz_Id__c = currentJobApplication.applicant_id;
+                    newJobApplication.Last_Synced_At__c = DateTime.now();
                     //Fetch Applicant and jobs seperately and associate later
                     JobsJazzIDSet.add(currentJobApplication.job_id);
                     ApplicantsJazzIDSet.add(currentJobApplication.applicant_id);
@@ -359,6 +360,7 @@ public class JazzHRSFDCUtils {
                     newJobApplication.Workflow_Step_Id__c = currentJobApplication.workflow_step_id;
                     newJobapplication.Job_Jazz_ID__c = currentJobApplication.job_id;
                     newJobApplication.Applicant_Jazz_Id__c = currentJobApplication.applicant_id;
+                    newJobApplication.Last_Synced_At__c = DateTime.now();
                     //Fetch Applicant and jobs seperately and associate later
                     JobsJazzIDSet.add(currentJobApplication.job_id);
                     ApplicantsJazzIDSet.add(currentJobApplication.applicant_id);
@@ -399,37 +401,56 @@ public class JazzHRSFDCUtils {
                 
                 //upsert ApplicantToUpsertList JazzHR_Applicant_ID__c;
                 List<Log_Entry__c> entries = new List<Log_Entry__c>();
-                
-                for(Database.UpsertResult theResult : results) {
-                    system.debug('****Result id'+theResult.getId());
-                    if(theResult.isSuccess())
-                        continue; // next item
-                    List<Database.Error> errors = theResult.getErrors();
-                    for(Database.Error theError : Errors) {
+                // Updated Code Snipet due to : We need Applicant, Job Application and Job Listing Id for reference in Log Entries
+                for(Integer index = 0; index < results.size(); index++) {
+                    if(results[index].isSuccess()) {
+                        continue;
+                    } 
+                    else if(!results[index].isSuccess()) {
+                        Database.Error errors =  results[index].getErrors().get(0);
                         Log_Entry__c newentry = new Log_Entry__c();
-                        newEntry.Function__c = 'JazzHRSFDCUtils.SyncJobApplications';
-                        newEntry.Message__c = 'Status Code: ' + theError.getStatusCode() + ': Error: ' + theError.getMessage();
+                        newEntry.Function__c = 'JazzHRSFDCUtils.SyncJobApplicationsByJobId';
+                        string errorMessage = 'Status Code: ' + errors.getStatusCode() + '	\r\n' 
+                            + ' Error: ' + errors.getMessage() + '\r\n' +'JazzHR Job Application ID:'+ JobsApplicationsToUpsertList[index].JazzHR_Job_Application_ID__c + '\r\n'
+                            + ' JazzHR Applicant ID:'+JobsApplicationsToUpsertList[index].Applicant_Jazz_Id__c+'\r\n'
+                            +'  JazzHR JobListing ID:'+JobsApplicationsToUpsertList[index].Job_Jazz_ID__c;
+                        newEntry.Message__c = errorMessage;
                         newentry.Type__c = 'Error';
                         entries.add(newentry);
                     }
                 }
                 
+                
+                /* Orignal Code Snipet
+                for(Database.UpsertResult theResult : results) {
+                    system.debug('****Result id'+theResult.getId());
+                    if(theResult.isSuccess()){
+                        continue; // next item
+                    }else{
+                        List<Database.Error> errors = theResult.getErrors();
+                        for(Database.Error theError : Errors) {
+                            Log_Entry__c newentry = new Log_Entry__c();
+                            newEntry.Function__c = 'JazzHRSFDCUtils.SyncJobApplications';
+                            newEntry.Message__c = 'Status Code: ' + theError.getStatusCode() + ': Error: ' + theError.getMessage() + 'Applicant ID' +
+                                theResult.getId();
+                            newentry.Type__c = 'Error';
+                            entries.add(newentry);
+                        }
+                    }
+
+                } 
+               */
                 insert entries;
             }
             return true;
         }
         catch(Exception oEx)
         {
-             Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRSFDCUtils.SyncJobApplications', '');    
+            Logger.Log('Error','Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage(), 'JazzHRSFDCUtils.SyncJobApplications', '');    
             system.debug('Error: ' + 'Line Number: ' + oEx.getLineNumber() + ' Message: ' + oEx.getMessage());
             return false;           
         }
     }
-    
-    
-    
-    
-    
     //sync a single applicant with SFDC from JazzHr
     public static SyncApplicantResponse SyncSingleApplicant(JazzHRWrapper.ApplicantWrapper currentApplicant, 
                                               JazzHRWrapper.ApplicantWithSingleApplicationWrapper currentApplicantWithSingleJob)
@@ -439,7 +460,7 @@ public class JazzHRSFDCUtils {
         {
             If(currentApplicant != null)
             {
-                system.debug('---applicant record----->'+currentApplicant);
+                system.debug('---applicant record currentApplicant!=null----->'+currentApplicant);
                 //Step 1: Update Applicant Details
                 Applicant__c newApplicant = new Applicant__c();
                 newApplicant.JazzHR_Applicant_ID__c = currentApplicant.id;
@@ -549,7 +570,7 @@ public class JazzHRSFDCUtils {
                 List<Job_Application__c> JobApplicationsToUpdate = new List<Job_Application__c>();
                 
                 //Get List of Current Job Applications on Applicant     
-                List<Job_Application__c> ExistingJobApplicationsList = [SELECT Id, Job_Jazz_ID__c, Hiring_Lead_Rating__c, Average_Rating__c,
+                List<Job_Application__c> ExistingJobApplicationsList = [SELECT Id, Job_Jazz_ID__c,JazzHR_Job_Application_ID__c, Hiring_Lead_Rating__c, Average_Rating__c,
                                                                         Workflow_Step_ID__c, Applicant_Progress__c FROM Job_Application__c
                                                                         WHERE Applicant__r.JazzHR_Applicant_ID__c =: currentApplicant.id ];
                 
@@ -585,6 +606,7 @@ public class JazzHRSFDCUtils {
                     newApplication.Applicant__c = newApplicant.id;
                     newApplication.Job_Listing__c = newJob.id;
                     newApplication.Job_Jazz_ID__c = newJob.JazzHR_Job_ID__c;
+                    newApplication.Last_Synced_At__c = DateTime.now();
                     JazzJobIdAndApplicationMap.put(newJob.JazzHR_Job_ID__c, newApplication);
                 }
                 
@@ -616,6 +638,8 @@ public class JazzHRSFDCUtils {
                     
                     job.Workflow_Step_ID__c = currentJobApplication.workflow_step_id;
                     job.Applicant_Progress__c = currentJobApplication.applicant_progress;
+                    // this line is not in code i have added it = sachin 13/6/
+                    
                     JobApplicationsToUpdate.add(job);
                 }
                 
@@ -646,7 +670,7 @@ system.debug('ExistingQuestionsMap Size: ' + ExistingQuestionsMap.size());
 */
                 //As key is not received, we needed to delete all and then reinsert all questiosn for given applicant.
                 
-                Delete ExistingQuestionsList;
+                //Delete ExistingQuestionsList;
                 
                 For(JazzHRWrapper.QuestionnaireWrapper currentQues: currentApplicant.questionnaire)
                 {
@@ -815,6 +839,7 @@ system.debug('ExistingQuestionsMap Size: ' + ExistingQuestionsMap.size());
                     newApplication.Applicant__c = newApplicant.id;
                     newApplication.Job_Listing__c = newJob.id;
                     newApplication.Job_Jazz_ID__c = newJob.JazzHR_Job_ID__c;
+                    newApplication.Last_Synced_At__c = DateTime.now();
                     JazzJobIdAndApplicationMap.put(newJob.JazzHR_Job_ID__c, newApplication);
                 }
                 
